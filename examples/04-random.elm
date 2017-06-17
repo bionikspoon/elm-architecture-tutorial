@@ -1,9 +1,11 @@
 module Main exposing (..)
 
 import Html exposing (..)
+import Html.Attributes
 import Html.Events exposing (..)
-import Html.Attributes exposing (..)
 import Random
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 
 
 main =
@@ -69,52 +71,60 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        [ div [ containerStyle ]
-            [ div [ dieFaceSpriteStyle model.dieFace1 ] []
-            , div [ dieFaceSpriteStyle model.dieFace2 ] []
-            ]
-        , button [ onClick Roll ] [ text "Roll" ]
+        [ dieFace model.dieFace1
+        , dieFace model.dieFace2
+        , button [ onClick Roll, Html.Attributes.style [ ( "display", "block" ) ] ] [ Html.text "Roll" ]
         ]
 
 
-imgOffset : Int -> String
-imgOffset number =
+dieFace : Int -> Svg Msg
+dieFace number =
+    svg [ width "200", height "200" ]
+        (dieFaceContainer :: dieFaceSide number)
+
+
+dieFaceContainer : Svg Msg
+dieFaceContainer =
+    rect [ x "3", y "3", rx "25", ry "25", width "194", height "194", fill "white", stroke "black", strokeWidth "6" ] []
+
+
+dieFaceSide : Int -> List (Svg Msg)
+dieFaceSide number =
     case number of
-        1 ->
-            "-11px"
-
-        2 ->
-            "-127px"
-
-        3 ->
-            "-242px"
-
-        4 ->
-            "-358px"
+        6 ->
+            [ circle [ cx "45", cy "45", r "25", fill "black" ] []
+            , circle [ cx "45", cy "97", r "25", fill "black" ] []
+            , circle [ cx "45", cy "148", r "25", fill "black" ] []
+            , circle [ cx "148", cy "45", r "25", fill "black" ] []
+            , circle [ cx "148", cy "97", r "25", fill "black" ] []
+            , circle [ cx "148", cy "148", r "25", fill "black" ] []
+            ]
 
         5 ->
-            "-473px"
+            [ circle [ cx "45", cy "45", r "25", fill "black" ] []
+            , circle [ cx "45", cy "148", r "25", fill "black" ] []
+            , circle [ cx "97", cy "97", r "25", fill "black" ] []
+            , circle [ cx "148", cy "148", r "25", fill "black" ] []
+            , circle [ cx "148", cy "45", r "25", fill "black" ] []
+            ]
 
-        6 ->
-            "-589px"
+        4 ->
+            [ circle [ cx "45", cy "45", r "25", fill "black" ] []
+            , circle [ cx "45", cy "148", r "25", fill "black" ] []
+            , circle [ cx "148", cy "148", r "25", fill "black" ] []
+            , circle [ cx "148", cy "45", r "25", fill "black" ] []
+            ]
+
+        3 ->
+            [ circle [ cx "45", cy "148", r "25", fill "black" ] []
+            , circle [ cx "97", cy "97", r "25", fill "black" ] []
+            , circle [ cx "148", cy "45", r "25", fill "black" ] []
+            ]
+
+        2 ->
+            [ circle [ cx "45", cy "148", r "25", fill "black" ] []
+            , circle [ cx "148", cy "45", r "25", fill "black" ] []
+            ]
 
         _ ->
-            "-11px"
-
-
-containerStyle : Attribute msg
-containerStyle =
-    style
-        [ ( "display", "flex" )
-        ]
-
-
-dieFaceSpriteStyle : Int -> Attribute msg
-dieFaceSpriteStyle number =
-    style
-        [ ( "backgroundImage", "url(/images/die-faces.png)" )
-        , ( "backgroundPositionX", imgOffset number )
-        , ( "backgroundPositionY", "115px" )
-        , ( "height", "110px" )
-        , ( "width", "110px" )
-        ]
+            [ circle [ cx "97", cy "97", r "25", fill "black" ] [] ]
