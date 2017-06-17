@@ -1,3 +1,5 @@
+module Main exposing (..)
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -5,14 +7,13 @@ import Http
 import Json.Decode as Decode
 
 
-
 main =
-  Html.program
-    { init = init "cats"
-    , view = view
-    , update = update
-    , subscriptions = subscriptions
-    }
+    Html.program
+        { init = init "cats"
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
 
 
@@ -20,16 +21,17 @@ main =
 
 
 type alias Model =
-  { topic : String
-  , gifUrl : String
-  }
+    { currentTopic : String
+    , nextTopic : String
+    , gifUrl : String
+    }
 
 
-init : String -> (Model, Cmd Msg)
-init topic =
-  ( Model topic "waiting.gif"
-  , getRandomGif topic
-  )
+init : String -> ( Model, Cmd Msg )
+init currentTopic =
+    ( Model currentTopic "" "/images/waiting.gif"
+    , getRandomGif currentTopic
+    )
 
 
 
@@ -37,21 +39,25 @@ init topic =
 
 
 type Msg
-  = MorePlease
-  | NewGif (Result Http.Error String)
+    = MorePlease
+    | NextTopic String
+    | NewGif (Result Http.Error String)
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of
-    MorePlease ->
-      (model, getRandomGif model.topic)
+    case msg of
+        MorePlease ->
+            ( Model model.nextTopic "" model.gifUrl, getRandomGif model.nextTopic )
 
-    NewGif (Ok newUrl) ->
-      (Model model.topic newUrl, Cmd.none)
+        NextTopic nextTopic ->
+            ( Model model.currentTopic nextTopic model.gifUrl, Cmd.none )
 
-    NewGif (Err _) ->
-      (model, Cmd.none)
+        NewGif (Ok newUrl) ->
+            ( Model model.currentTopic model.nextTopic newUrl, Cmd.none )
+
+        NewGif (Err _) ->
+            ( model, Cmd.none )
 
 
 
@@ -60,12 +66,13 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  div []
-    [ h2 [] [text model.topic]
-    , button [ onClick MorePlease ] [ text "More Please!" ]
-    , br [] []
-    , img [src model.gifUrl] []
-    ]
+    div []
+        [ h2 [] [ text model.currentTopic ]
+        , input [ type_ "text", placeholder "topic", onInput NextTopic, value model.nextTopic ] []
+        , button [ onClick MorePlease ] [ text "More Please!" ]
+        , br [] []
+        , img [ src model.gifUrl ] []
+        ]
 
 
 
@@ -74,7 +81,7 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.none
+    Sub.none
 
 
 
@@ -82,14 +89,14 @@ subscriptions model =
 
 
 getRandomGif : String -> Cmd Msg
-getRandomGif topic =
-  let
-    url =
-      "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ topic
-  in
-    Http.send NewGif (Http.get url decodeGifUrl)
+getRandomGif currentTopic =
+    let
+        url =
+            "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ currentTopic
+    in
+        Http.send NewGif (Http.get url decodeGifUrl)
 
 
 decodeGifUrl : Decode.Decoder String
 decodeGifUrl =
-  Decode.at ["data", "image_url"] Decode.string
+    Decode.at [ "data", "image_url" ] Decode.string
