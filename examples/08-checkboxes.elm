@@ -64,8 +64,7 @@ view model =
 checkbox : msg -> String -> Html msg
 checkbox msg name =
     label
-        [ style [ ( "padding", "20px" ) ]
-        ]
+        [ style [ ( "padding", "20px" ) ] ]
         [ input [ type_ "checkbox", onClick msg ] []
         , text name
         ]
